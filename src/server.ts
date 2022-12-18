@@ -1,4 +1,7 @@
 // IMPORTS
+import env from "dotenv";
+env.config();
+import minimist from "minimist";
 import express, { Request } from "express";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
@@ -16,10 +19,14 @@ import MongoStore from "connect-mongo";
 import {engine} from "express-handlebars";
 import session from "express-session";
 
-
+const PORT = 8080;
+/*
+const options = {default: {p: 8080}, alias:{p:"puerto"}}
+console.log(minimist(process.argv.slice(2), options))
+*/
 
 //GLOBAL VARIABLES
-mongoose.connect("mongodb+srv://pablo:coder@coder.bkt7yqu.mongodb.net/auth?retryWrites=true&w=majority").then(
+mongoose.connect(process.env.MONGODB_URL||"").then(
 	() => {
 		console.log("connection successful")
 	},
@@ -48,7 +55,7 @@ const createHash = (password :string) => {
 //APP INIT CONF
 app.use(cookieParser());
 app.use(session({
-	store: MongoStore.create({mongoUrl: "mongodb+srv://pablo:coder@coder.bkt7yqu.mongodb.net/auth?retryWrites=true&w=majority"}),
+	store: MongoStore.create({mongoUrl: process.env.MONGODB_URL}),
 	secret: "dfvartg4wfqR3EFRQ3",
 	resave: false,
 	saveUninitialized: false,
@@ -98,12 +105,29 @@ passport.use("signupStrategy", new passportLocal.Strategy(
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, 'public')));
-httpServer.listen(4000, ()=>{console.log("server listening on port 4000")});
+httpServer.listen(PORT, ()=>{console.log("server listening on port " + PORT)});
 
 
 app.get("/", (req,res) => {
 	res.redirect("/login")
 })
+
+app.get("/info", () => {
+	const serverData = {
+		os: process.platform,
+		vnode: process.versions.node,
+		rrs: process.memoryUsage.rss(),
+		pid: process.pid,
+		args: process.argv.slice(2),
+		execPath: process.execPath,
+		projectPath: process.env.PWD
+	}
+});
+
+app.get("/randoms", () => {
+
+});
+
 app.get("/stock", (req :any, res) => {
 	if(req.session.user == undefined){
 		res.redirect("/login")
