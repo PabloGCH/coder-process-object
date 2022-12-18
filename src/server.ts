@@ -110,15 +110,26 @@ app.get("/", (req,res) => {
 	res.redirect("/login")
 })
 
-app.get("/info", () => {
+app.get("/server-info", (req:any, res) => {
 	const serverData = {
 		os: process.platform,
 		vnode: process.versions.node,
 		rrs: process.memoryUsage.rss(),
 		pid: process.pid,
-		args: process.argv.slice(2),
+		args: process.argv.slice(2).toString(),
 		execPath: process.execPath,
 		projectPath: process.env.PWD
+	}
+	res.send(serverData);
+})
+
+app.get("/info", (req:any, res) => {
+
+	if(req.session.user == undefined){
+		res.redirect("/login")
+	} else {
+		res.cookie("username", req.session.user.username)
+		res.sendFile("public/client/index.html", {root: __dirname})
 	}
 });
 
@@ -147,7 +158,6 @@ app.get("/chat", (req :any, res) => {
 	if(req.session.user == undefined){
 		res.redirect("/login")
 	} else {
-
 		res.cookie("username", req.session.user.username)
 		res.sendFile("public/client/index.html", {root: __dirname})
 	}

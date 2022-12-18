@@ -29,6 +29,14 @@ const loginForm = async() => {
 	const html = template();
 	return html;
 }
+const serverInfo = async() => {
+	let serverData = await fetch("/server-info");
+	const response = await fetch("../templates/info.handlebars");
+	const result = await response.text();
+	const template = Handlebars.compile(result);
+	const html = template({loggedUser: username, ...await serverData.json()});
+	return html;
+}
 const logError = async() => {
 	const response = await fetch("../templates/logError.handlebars");
 	const result = await response.text();
@@ -199,6 +207,11 @@ if(window.location.pathname == "/logerror") {
 }
 if(window.location.pathname == "/register") {
 	registerForm().then(res => {
+		content.innerHTML = res;
+	})
+}
+if(window.location.pathname == "/info") {
+	serverInfo().then(res => {
 		content.innerHTML = res;
 	})
 }
