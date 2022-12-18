@@ -19,11 +19,9 @@ import MongoStore from "connect-mongo";
 import {engine} from "express-handlebars";
 import session from "express-session";
 
-const PORT = 8080;
-/*
-const options = {default: {p: 8080}, alias:{p:"puerto"}}
-console.log(minimist(process.argv.slice(2), options))
-*/
+
+const options = {default: {p: 8080}, alias:{p:"puerto"}};
+const args = minimist(process.argv.slice(2), options);
 
 //GLOBAL VARIABLES
 mongoose.connect(process.env.MONGODB_URL||"").then(
@@ -105,7 +103,7 @@ passport.use("signupStrategy", new passportLocal.Strategy(
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, 'public')));
-httpServer.listen(PORT, ()=>{console.log("server listening on port " + PORT)});
+httpServer.listen(args.p, ()=>{console.log("server listening on port " + args.p)});
 
 
 app.get("/", (req,res) => {
