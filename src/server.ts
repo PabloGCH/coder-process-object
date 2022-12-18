@@ -18,10 +18,12 @@ import { UserModel } from "./schemas/user";
 import MongoStore from "connect-mongo";
 import {engine} from "express-handlebars";
 import session from "express-session";
+import {fork} from "child_process";
 
 
 const options = {default: {p: 8080}, alias:{p:"puerto"}};
 const args = minimist(process.argv.slice(2), options);
+const randNumProcess = fork("./src/child-process/randomNumbers.ts");
 
 //GLOBAL VARIABLES
 mongoose.connect(process.env.MONGODB_URL||"").then(
@@ -124,7 +126,6 @@ app.get("/server-info", (req:any, res) => {
 })
 
 app.get("/info", (req:any, res) => {
-
 	if(req.session.user == undefined){
 		res.redirect("/login")
 	} else {
@@ -133,8 +134,12 @@ app.get("/info", (req:any, res) => {
 	}
 });
 
-app.get("/randoms", () => {
-
+app.get("/randoms", (req, res) => {
+	const cant = req.query.cant;
+	randNumProcess.send(cant||100000000);
+	randNumProcess.on("message", (data) => {
+		res.send(data);
+	})
 });
 
 app.get("/stock", (req :any, res) => {
