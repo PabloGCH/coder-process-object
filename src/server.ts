@@ -23,7 +23,6 @@ import {fork} from "child_process";
 
 const options = {default: {p: 8080}, alias:{p:"puerto"}};
 const args = minimist(process.argv.slice(2), options);
-const randNumProcess = fork("./src/child-process/randomNumbers.ts");
 
 //GLOBAL VARIABLES
 mongoose.connect(process.env.MONGODB_URL||"").then(
@@ -135,10 +134,11 @@ app.get("/info", (req:any, res) => {
 });
 
 app.get("/randoms", (req, res) => {
+	const randNumProcess = fork("./src/child-process/randomNumbers.ts");
 	const cant = req.query.cant;
 	randNumProcess.send(cant||100000000);
 	randNumProcess.on("message", (data) => {
-		res.send(data);
+		return res.send(data);
 	})
 });
 
